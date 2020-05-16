@@ -1,0 +1,23 @@
+node{
+    stage('UserLogin-Docker'){
+        echo 'Hello World'
+    }
+    stage('SCM Checkout'){
+        git 'https://github.com/lokesh8389/UserLogin-Docker'
+    }
+    stage('Compile-Package') {
+        def mvnHome = tool name: 'Maven3', type: 'maven'
+        sh "${mvnHome}/bin/mvn -version"
+		sh "${mvnHome}/bin/mvn -Dmaven.test.failure.ignore=true clean package"
+    }
+	stage('sonar') {
+	  
+	    def scannerHome = tool 'sonar_scanner'
+	    withSonarQubeEnv('sonar_server') {
+            sh "${scannerHome}/bin/sonar-scanner"
+	    }
+	} 
+	stage('docker'){
+	sshPublisher(publishers: [sshPublisherDesc(configName: 'docker_server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'docker build -t my-webapp .', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '//home//lokesh', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'target/UserLogin.war,Dockerfile'), sshTransfer(cleanRemote: false, excludes: '', execCommand: 'docker run -p 8080:8080 --name my-web --link my-mysql my-webapp', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'db/create_table.sql')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])}
+
+}
