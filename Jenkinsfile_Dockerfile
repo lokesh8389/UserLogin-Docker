@@ -17,7 +17,10 @@ node{
             sh "${scannerHome}/bin/sonar-scanner"
 	    }
 	} 
-	stage('docker'){
-	sshPublisher(publishers: [sshPublisherDesc(configName: 'docker_server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'docker build -t my-webapp .', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '//home//lokesh', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'target/UserLogin.war,Dockerfile'), sshTransfer(cleanRemote: false, excludes: '', execCommand: 'docker run -p 8080:8080 --name my-web --link my-mysql my-webapp', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'db/create_table.sql')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])}
-
+	stage('docker-build'){
+	    sshPublisher(publishers: [sshPublisherDesc(configName: 'docker_server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'docker build -t lokesh8389/my-webapp:${BUILD_NUMBER} .', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '//home//lokesh', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'target/UserLogin.war,Dockerfile')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+	}
+	stage('docker-run'){
+	    sshPublisher(publishers: [sshPublisherDesc(configName: 'docker_server', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'docker rm -f my-web || true', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: ''), sshTransfer(cleanRemote: false, excludes: '', execCommand: 'docker run -p 8080:8080 --name my-web --link my-mysql lokesh8389/my-webapp:${BUILD_NUMBER}', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '//home//lokesh', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'target/UserLogin.war,Dockerfile')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+	}
 }
